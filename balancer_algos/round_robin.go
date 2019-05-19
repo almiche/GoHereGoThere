@@ -5,15 +5,19 @@ type roundRobin  struct{
 	nodes []string
 }
 
-func NewRoundRobin(nodes []string) *roundRobin{
+func NewRoundRobin() *roundRobin{
 	return &roundRobin{
 		next_node:0,
-		nodes: nodes,
+		nodes: nil,
 	}
 }
 
 func (r roundRobin) GetNodes() []string{
 	return r.nodes
+}
+
+func (r *roundRobin) SetNodes(nodes []string){
+	r.nodes = nodes
 }
 
 func (r *roundRobin) Balance() string{

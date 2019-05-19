@@ -1,9 +1,12 @@
 package main
 
 import (
-	"go-fuckery/balancer_algos"
+	"GoHereGoThere/balancer_algos"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -13,13 +16,16 @@ type LoadBalancer struct {
 	balancer balancer_algos.Balancer
 }
 
+type BalancerConfig struct {
+	BalancerAlgo string `yaml:"BalancerAlgo"`
+	Nodes []string  `yaml:"Nodes"`
+}
+
 func main() {
-	app := &LoadBalancer{
-		balancer: balancer_algos.NewRoundRobin(Nodes()),
-	}
+	load_balancer := CreateLoadBalancer()
 
 	r := mux.NewRouter()
-	r.HandleFunc("/", app.BalanceRequest)
+	r.HandleFunc("/", load_balancer.BalanceRequest)
 	http.Handle("/", r)
 
 	srv := &http.Server{
@@ -39,6 +45,28 @@ func (b LoadBalancer)BalanceRequest(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Incoming request dispatching to:%v",next_node)
 }
 
-func Nodes() []string{
-	return []string {"192.250.78.1","134.45.65.76","192.45.65.02","156.46.45.21"}
+func CreateLoadBalancer() *LoadBalancer{
+	user_config := GetConfig()
+	balancer := balancer_algos.MapOfAlgos()[user_config.BalancerAlgo]
+	balancer.SetNodes(user_config.Nodes)
+
+	return &LoadBalancer{
+		balancer: balancer,
+	}
+}
+
+func GetConfig() *BalancerConfig{
+	configuration := BalancerConfig{}
+
+	yaml_file, err := ioutil.ReadFile(os.Args[1])
+	if err != nil {
+		log.Fatal("An error has occured reading the file you have provided")
+	}
+
+	err = yaml.Unmarshal([]byte(yaml_file), &configuration)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	return &configuration
 }
