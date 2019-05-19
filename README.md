@@ -1,4 +1,4 @@
-![GoHereGoThere](https://user-images.githubusercontent.com/14715156/57989142-89479980-7a64-11e9-8308-bb0f3491b968.png)
+![GoHereGoThere](https://user-images.githubusercontent.com/14715156/57989207-6f5a8680-7a65-11e9-899f-465cd1aa26a5.png)
 
 # What is this?
 
