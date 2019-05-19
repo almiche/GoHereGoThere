@@ -17,8 +17,8 @@ type LoadBalancer struct {
 }
 
 type BalancerConfig struct {
-	BalancerAlgo string `yaml:"BalancerAlgo"`
-	Nodes []string  `yaml:"Nodes"`
+	BalancerAlgo string   `yaml:"BalancerAlgo"`
+	Nodes        []string `yaml:"Nodes"`
 }
 
 func main() {
@@ -29,8 +29,8 @@ func main() {
 	http.Handle("/", r)
 
 	srv := &http.Server{
-		Handler:      r,
-		Addr:         "127.0.0.1:8000",
+		Handler: r,
+		Addr:    "127.0.0.1:8000",
 		// Good practice: enforce timeouts for servers you create!
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
@@ -38,14 +38,14 @@ func main() {
 	log.Print(srv.ListenAndServe())
 }
 
-func (b LoadBalancer)BalanceRequest(w http.ResponseWriter, r *http.Request) {
+func (b LoadBalancer) BalanceRequest(w http.ResponseWriter, r *http.Request) {
 	//vars := mux.Vars(r)
 	w.WriteHeader(http.StatusOK)
 	next_node := b.balancer.Balance()
-	log.Printf("Incoming request dispatching to:%v",next_node)
+	log.Printf("Incoming request dispatching to:%v", next_node)
 }
 
-func CreateLoadBalancer() *LoadBalancer{
+func CreateLoadBalancer() *LoadBalancer {
 	user_config := GetConfig()
 	balancer := balancer_algos.MapOfAlgos()[user_config.BalancerAlgo]
 	balancer.SetNodes(user_config.Nodes)
@@ -55,7 +55,7 @@ func CreateLoadBalancer() *LoadBalancer{
 	}
 }
 
-func GetConfig() *BalancerConfig{
+func GetConfig() *BalancerConfig {
 	configuration := BalancerConfig{}
 
 	yaml_file, err := ioutil.ReadFile(os.Args[1])
