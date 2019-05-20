@@ -1,7 +1,6 @@
 package main
 
 import (
-	"GoHereGoThere/balancerAlgos"
 	"bytes"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -12,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/almiche/GoHereGoThere/balancerAlgos"
 	"github.com/gorilla/mux"
 )
 
@@ -50,7 +50,7 @@ func (b LoadBalancer) BalanceRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	r.URL = &url.URL{
-		Host: nextNode,
+		Host:   nextNode,
 		Scheme: scheme,
 	}
 	log.Printf("Incoming request dispatching to:%v", nextNode)
@@ -61,8 +61,8 @@ func (b LoadBalancer) BalanceRequest(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("An error has occured")
 	}
 
-	for key,value := range resp.Header {
-		w.Header().Set(key,strings.Join(value,","))
+	for key, value := range resp.Header {
+		w.Header().Set(key, strings.Join(value, ","))
 	}
 
 	w.WriteHeader(resp.StatusCode)
@@ -82,7 +82,7 @@ func CreateLoadBalancer() *LoadBalancer {
 	balancer.SetNodes(user_config.Nodes)
 
 	return &LoadBalancer{
-		BALANCER: balancer,
+		BALANCER:   balancer,
 		HTTPClient: &http.Client{},
 	}
 }
