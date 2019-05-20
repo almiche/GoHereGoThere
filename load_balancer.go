@@ -1,7 +1,7 @@
 package main
 
 import (
-	"GoHereGoThere/balancer_algos"
+	"GoHereGoThere/balancerAlgos"
 	"bytes"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -16,8 +16,8 @@ import (
 )
 
 type LoadBalancer struct {
-	balancer balancer_algos.Balancer
-	http_client *http.Client
+	BALANCER   balancerAlgos.Balancer
+	HTTPClient *http.Client
 }
 
 type BalancerConfig struct {
@@ -43,16 +43,20 @@ func main() {
 }
 
 func (b LoadBalancer) BalanceRequest(w http.ResponseWriter, r *http.Request) {
-	nextNode := b.balancer.Balance()
+	nextNode := b.BALANCER.Balance()
+	scheme := r.URL.Scheme
+	if r.URL.Scheme == "" {
+		scheme = "https"
+	}
 
 	r.URL = &url.URL{
-		Host:nextNode,
-		Scheme:"https",
+		Host: nextNode,
+		Scheme: scheme,
 	}
 	log.Printf("Incoming request dispatching to:%v", nextNode)
 
 	r.RequestURI = ""
-	resp, err := b.http_client.Do(r)
+	resp, err := b.HTTPClient.Do(r)
 	if err != nil {
 		log.Fatal("An error has occured")
 	}
@@ -74,12 +78,12 @@ func (b LoadBalancer) BalanceRequest(w http.ResponseWriter, r *http.Request) {
 
 func CreateLoadBalancer() *LoadBalancer {
 	user_config := GetConfig()
-	balancer := balancer_algos.MapOfAlgos()[user_config.BalancerAlgo]
+	balancer := balancerAlgos.MapOfAlgos()[user_config.BalancerAlgo]
 	balancer.SetNodes(user_config.Nodes)
 
 	return &LoadBalancer{
-		balancer: balancer,
-		http_client: &http.Client{},
+		BALANCER: balancer,
+		HTTPClient: &http.Client{},
 	}
 }
 

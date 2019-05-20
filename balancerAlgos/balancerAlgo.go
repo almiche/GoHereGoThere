@@ -1,4 +1,4 @@
-package balancer_algos
+package balancerAlgos
 
 type Balancer interface {
 	GetNodes() []string

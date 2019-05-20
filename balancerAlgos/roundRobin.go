@@ -1,4 +1,4 @@
-package balancer_algos
+package balancerAlgos
 
 type roundRobin struct {
 	next_node int // Previous response returned
