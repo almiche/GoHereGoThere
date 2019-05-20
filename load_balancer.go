@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -16,7 +17,7 @@ import (
 )
 
 type LoadBalancer struct {
-	BALANCER   balancerAlgos.Balancer
+	Balancer   balancerAlgos.Balancer
 	HTTPClient *http.Client
 }
 
@@ -43,7 +44,7 @@ func main() {
 }
 
 func (b LoadBalancer) BalanceRequest(w http.ResponseWriter, r *http.Request) {
-	nextNode := b.BALANCER.Balance()
+	nextNode := b.Balancer.Balance()
 	scheme := r.URL.Scheme
 	if r.URL.Scheme == "" {
 		scheme = "https"
@@ -77,12 +78,12 @@ func (b LoadBalancer) BalanceRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateLoadBalancer() *LoadBalancer {
-	user_config := GetConfig()
-	balancer := balancerAlgos.MapOfAlgos()[user_config.BalancerAlgo]
-	balancer.SetNodes(user_config.Nodes)
+	userConfig := GetConfig()
+	balancer := balancerAlgos.MapOfAlgos()[userConfig.BalancerAlgo]
+	balancer.SetNodes(userConfig.Nodes)
 
 	return &LoadBalancer{
-		BALANCER:   balancer,
+		Balancer:   balancer,
 		HTTPClient: &http.Client{},
 	}
 }
@@ -90,12 +91,13 @@ func CreateLoadBalancer() *LoadBalancer {
 func GetConfig() *BalancerConfig {
 	configuration := BalancerConfig{}
 
-	yaml_file, err := ioutil.ReadFile(os.Args[1])
+	path,_ := filepath.Abs(os.Args[1])
+	yamlFiles, err := ioutil.ReadFile(path)
 	if err != nil {
 		log.Fatal("An error has occured reading the file you have provided")
 	}
 
-	err = yaml.Unmarshal([]byte(yaml_file), &configuration)
+	err = yaml.Unmarshal([]byte(yamlFiles), &configuration)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}
