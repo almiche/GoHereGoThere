@@ -2,11 +2,14 @@ package main
 
 import (
 	"GoHereGoThere/balancer_algos"
+	"bytes"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -14,6 +17,7 @@ import (
 
 type LoadBalancer struct {
 	balancer balancer_algos.Balancer
+	http_client *http.Client
 }
 
 type BalancerConfig struct {
@@ -39,10 +43,32 @@ func main() {
 }
 
 func (b LoadBalancer) BalanceRequest(w http.ResponseWriter, r *http.Request) {
-	//vars := mux.Vars(r)
-	w.WriteHeader(http.StatusOK)
-	next_node := b.balancer.Balance()
-	log.Printf("Incoming request dispatching to:%v", next_node)
+	nextNode := b.balancer.Balance()
+
+	r.URL = &url.URL{
+		Path:nextNode,
+		Scheme:"http",
+	}
+	log.Printf("Incoming request dispatching to:%v", nextNode)
+
+	resp, err := b.http_client.Do(r)
+	if err != nil {
+		log.Fatal("An error has occured")
+	}
+
+	for key,value := range resp.Header {
+		w.Header().Set(key,strings.Join(value,","))
+	}
+
+	w.WriteHeader(resp.StatusCode)
+
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(resp.Body)
+
+	_, err := w.Write(buf.Bytes())
+	if err != nil {
+		log.Fatal("An error has occured writing back to the user")
+	}
 }
 
 func CreateLoadBalancer() *LoadBalancer {
@@ -52,6 +78,7 @@ func CreateLoadBalancer() *LoadBalancer {
 
 	return &LoadBalancer{
 		balancer: balancer,
+		http_client: &http.Client{},
 	}
 }
 

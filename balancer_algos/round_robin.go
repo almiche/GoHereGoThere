@@ -20,11 +20,11 @@ func (r *roundRobin) SetNodes(nodes []string) {
 	r.nodes = nodes
 }
 
-func (r *roundRobin) Balance() string {
+func (r *roundRobin) Balance() *string {
 	response := r.nodes[r.next_node]
 	r.next_node = 1 + r.next_node
 	if r.next_node == len(r.nodes) {
 		r.next_node = 0
 	}
-	return string(response)
+	return &response
 }
