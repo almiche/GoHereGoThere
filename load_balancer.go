@@ -46,11 +46,12 @@ func (b LoadBalancer) BalanceRequest(w http.ResponseWriter, r *http.Request) {
 	nextNode := b.balancer.Balance()
 
 	r.URL = &url.URL{
-		Path:nextNode,
-		Scheme:"http",
+		Host:nextNode,
+		Scheme:"https",
 	}
 	log.Printf("Incoming request dispatching to:%v", nextNode)
 
+	r.RequestURI = ""
 	resp, err := b.http_client.Do(r)
 	if err != nil {
 		log.Fatal("An error has occured")
@@ -65,7 +66,7 @@ func (b LoadBalancer) BalanceRequest(w http.ResponseWriter, r *http.Request) {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(resp.Body)
 
-	_, err := w.Write(buf.Bytes())
+	_, err = w.Write(buf.Bytes())
 	if err != nil {
 		log.Fatal("An error has occured writing back to the user")
 	}
